@@ -21,9 +21,10 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
 
     const jobsCollection = client.db("jobPortal").collection("jobs");
+    const jobsAppliedCollection = client.db("jobPortal").collection("jobsApplied");
 
 
     // Jobs API get
@@ -41,7 +42,15 @@ async function run() {
         res.send(job);
     })
 
-    await client.db("admin").command({ ping: 1 });
+    // Job Apply API post
+    app.post('/jobApplication', async(req, res) => {
+      const jobApplication = req.body;
+      const result = await jobsAppliedCollection.insertOne(jobApplication);
+      res.send(result);
+    })
+
+
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
 
