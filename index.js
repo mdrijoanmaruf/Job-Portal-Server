@@ -51,15 +51,16 @@ async function run() {
       res.send(result);
     });
 
-    // Each user job application get
-    app.get("/jobApplications", async (req, res) => {
+    // Get all job applications for a specific job
+    app.get("/application" , async (req , res) => {
       const email = req.query.email;
+
       const query = {
-        applicant: email,
+        email: email,
       };
       const result = await jobsAppliedCollection.find(query).toArray();
       res.send(result);
-    });
+    })
 
     // await client.db("admin").command({ ping: 1 });
     console.log(
