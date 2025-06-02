@@ -30,7 +30,13 @@ async function run() {
 
     // Jobs API get
     app.get("/jobs", async (req, res) => {
-      const cursor = jobsCollection.find();
+
+      const email = req.query.email;
+      let query = {};
+      if (email) {
+        query = { hr_email: email };
+      }
+      const cursor = jobsCollection.find(query);
       const jobs = await cursor.toArray();
       res.send(jobs);
     });
@@ -69,6 +75,34 @@ async function run() {
       const result = await jobsAppliedCollection.find(query).toArray();
       res.send(result);
     })
+
+    // My Added Jobs API get
+    app.get("/jobsByEmailAddress" , async (req , res) => {
+      const email = req.query.email;
+      const query = {
+        hr_email: email,
+      };
+      const result = await jobsCollection.find(query).toArray();
+      res.send(result);
+    })
+
+    // Delete job API
+    app.delete("/jobs/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await jobsCollection.deleteOne(query);
+        
+        if (result.deletedCount === 0) {
+          return res.status(404).send({ success: false, message: "Job not found" });
+        }
+        
+        res.send({ success: true, message: "Job deleted successfully" });
+      } catch (error) {
+        console.error("Error deleting job:", error);
+        res.status(500).send({ success: false, message: "Failed to delete job" });
+      }
+    });
 
     // await client.db("admin").command({ ping: 1 });
     console.log(
