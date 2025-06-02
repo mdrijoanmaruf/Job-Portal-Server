@@ -104,6 +104,38 @@ async function run() {
       }
     });
 
+    // Update job API
+    app.put("/jobs/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const updatedJob = req.body;
+        const query = { _id: new ObjectId(id) };
+        
+        const result = await jobsCollection.updateOne(
+          query, 
+          { $set: updatedJob }
+        );
+        
+        if (result.matchedCount === 0) {
+          return res.status(404).send({ 
+            success: false, 
+            message: "Job not found" 
+          });
+        }
+        
+        res.send({ 
+          success: true, 
+          message: "Job updated successfully"
+        });
+      } catch (error) {
+        console.error("Error updating job:", error);
+        res.status(500).send({ 
+          success: false, 
+          message: "Failed to update job" 
+        });
+      }
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
