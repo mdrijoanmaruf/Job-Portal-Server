@@ -136,6 +136,49 @@ async function run() {
       }
     });
 
+    // Get applications for a specific job
+    app.get("/applications/job/:jobId", async (req, res) => {
+      try {
+        const jobId = req.params.jobId;
+        const query = { jobId: jobId };
+        const applications = await jobsAppliedCollection.find(query).toArray();
+        res.send(applications);
+      } catch (error) {
+        console.error("Error fetching applications:", error);
+        res.status(500).send({ success: false, message: "Failed to fetch applications" });
+      }
+    });
+
+    // Update application status
+    app.patch("/applications/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const { status } = req.body;
+        
+        // Validate status
+        const validStatuses = ['pending', 'reviewing', 'shortlisted', 'rejected', 'hired'];
+        if (!validStatuses.includes(status)) {
+          return res.status(400).send({ success: false, message: "Invalid status value" });
+        }
+        
+        const query = { _id: new ObjectId(id) };
+        const updateDoc = {
+          $set: { status: status }
+        };
+        
+        const result = await jobsAppliedCollection.updateOne(query, updateDoc);
+        
+        if (result.matchedCount === 0) {
+          return res.status(404).send({ success: false, message: "Application not found" });
+        }
+        
+        res.send({ success: true, message: "Application status updated successfully" });
+      } catch (error) {
+        console.error("Error updating application status:", error);
+        res.status(500).send({ success: false, message: "Failed to update application status" });
+      }
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
